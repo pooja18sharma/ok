@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Birthday Surprise</title>
+
+<style>
+:root{
+  --accent:#ff8fb8;
+  font-family:"Poppins",system-ui,sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{overflow:hidden;background:#000}
+
+/* ---------- BASE ---------- */
+.scene{
+  position:absolute;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  text-align:center;
+}
+.scene.active{display:flex}
+
+.btn{
+  padding:12px 26px;
+  border-radius:14px;
+  border:none;
+  cursor:pointer;
+  font-weight:700;
+}
+.btn.next{
+  background:linear-gradient(180deg,var(--accent),#ff5fa2);
+  color:#fff;
+}
+.btn.ghost{
+  background:#ffffffcc;
+}
+
+/* ---------- SCENE 1 ---------- */
+#scene1{
+  background:
+    linear-gradient(rgba(0,0,0,.25),rgba(0,0,0,.25)),
+    url("https://res.cloudinary.com/dcygfcuov/image/upload/v1765808861/Picsart_25-12-15_19-57-16-499_mnyibb.jpg")
+    center/contain no-repeat;
+}
+
+.cat{
+  width:220px;
+}
+
+.chibbi-wrap{
+  display:flex;
+  margin:12px 0;
+}
+.chibbi-wrap img{
+  width:120px;
+}
+.chibbi-wrap img:last-child{
+  margin-left:-60px;
+}
+
+/* ---------- SCENE 2 ---------- */
+#scene2{
+  background:
+    url("https://res.cloudinary.com/dcygfcuov/image/upload/v1765826729/Picsart_25-12-16_00-52-11-968_z8dehz.jpg")
+    center/contain no-repeat;
+  background-color:#000;
+}
+
+.mailbox{
+  position:absolute;
+  bottom:12%;
+  right:6%;
+  padding:14px 22px;
+  background:#fff;
+  border-radius:14px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.scene2-back{
+  position:absolute;
+  bottom:4%;
+  left:6%;
+}
+
+.bouquet-wrap{
+  display:none;
+  position:absolute;
+  right:8%;
+  top:50%;
+  transform:translateY(-50%);
+  flex-direction:column;
+  gap:14px;
+  align-items:center;
+}
+
+.bouquet{
+  width:180px;
+  filter:drop-shadow(0 0 18px rgba(255,143,184,.9));
+}
+
+.scroll-text{
+  background:#fff5fa;
+  padding:14px 22px;
+  border-radius:12px;
+  font-weight:700;
+}
+
+/* ---------- SCENE 3 ---------- */
+#scene3{
+  background:
+    linear-gradient(rgba(0,0,0,.15),rgba(0,0,0,.15)),
+    url("https://res.cloudinary.com/dcygfcuov/image/upload/v1765826729/Picsart_25-12-16_00-54-32-052_ibqznm.jpg")
+    center/contain no-repeat;
+  background-color:#000;
+}
+
+.letter-row{
+  position:absolute;
+  top:4%;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:26px;
+}
+
+.letter{
+  width:70px;
+  cursor:pointer;
+  filter:drop-shadow(0 0 6px rgba(255,143,184,.9));
+}
+
+/* ---------- LETTER MODAL ---------- */
+.modal{
+  display:none;
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+
+.pink-letter{
+  background:#ffe6f0;
+  padding:22px 20px;
+  border-radius:18px;
+  width:min(92vw,460px);
+  max-height:82vh;
+  overflow-y:auto;
+  box-shadow:0 20px 40px rgba(255,143,184,.35);
+  text-align:left;
+}
+
+.pink-letter h3{
+  margin-top:0;
+  text-align:center;
+  color:#c7437a;
+  font-size:20px;
+}
+
+.letter-text{
+  font-size:14.5px;
+  line-height:1.65;
+  color:#3a2a33;
+  white-space:pre-wrap;
+}
+
+/* ---------- SCENE 4 ---------- */
+#scene4{
+  background:#000;
+  color:#fff;
+}
+
+.stars{
+  margin-top:24px;
+  display:flex;
+  gap:24px;
+  justify-content:center;
+}
+
+.star{
+  font-size:32px;
+  cursor:pointer;
+}
+.star.active{
+  color:#ff7eb9;
+  text-shadow:0 0 12px #ff7eb9;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SCENE 1 -->
+<section id="scene1" class="scene active">
+  <img class="cat" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765809869/Picsart_25-12-15_20-13-58-790_oppdt5.png">
+  <div class="chibbi-wrap">
+    <img src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765823342/Picsart_25-12-15_23-58-41-430_xx9tpj.png">
+    <img src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765808739/Picsart_25-12-15_19-55-23-016_uvceze.png">
+  </div>
+  <button class="btn next" onclick="goToScene(2)">Click</button>
+</section>
+
+<!-- SCENE 2 -->
+<section id="scene2" class="scene">
+  <button class="btn ghost scene2-back" onclick="goToScene(1)">Back</button>
+  <div class="mailbox" id="mailbox" onclick="openBouquet()">📬 Click here</div>
+
+  <div class="bouquet-wrap" id="bouquetWrap">
+    <img class="bouquet" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765807945/Picsart_25-12-15_19-42-04-069_knu0nr.png">
+    <div class="scroll-text">click karo 💕</div>
+    <button class="btn next" onclick="goToScene(3)">Click</button>
+  </div>
+</section>
+
+<!-- SCENE 3 -->
+<section id="scene3" class="scene">
+  <div class="letter-row">
+    <img class="letter" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765822481/Picsart_25-12-15_23-44-24-113_orf7hl.png" onclick="openLetter(letter1)">
+    <img class="letter" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765822481/Picsart_25-12-15_23-44-24-113_orf7hl.png" onclick="openLetter(letter2)">
+    <img class="letter" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765822481/Picsart_25-12-15_23-44-24-113_orf7hl.png" onclick="openLetter(letter3)">
+    <img class="letter" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765822481/Picsart_25-12-15_23-44-24-113_orf7hl.png" onclick="openLetter(letter4)">
+  </div>
+
+  <div style="position:absolute;bottom:4%;display:flex;gap:20px">
+    <button class="btn ghost" onclick="goToScene(2)">Back</button>
+    <button class="btn next" onclick="goToScene(4)">Next</button>
+  </div>
+</section>
+
+<!-- SCENE 4 -->
+<section id="scene4" class="scene">
+  <h2>Make a wish ✨</h2>
+  <p>click all the stars for cute messages 💖</p>
+
+  <div class="stars">
+    <div class="star" onclick="wish(this,'You’re my 11:11 wish')">⭐</div>
+    <div class="star" onclick="wish(this,'I wished for you and you came true')">⭐</div>
+    <div class="star" onclick="wish(this,'You’re my favoritest person')">⭐</div>
+    <div class="star" onclick="wish(this,'I hope that in every universe, you’re my soulmate')">⭐</div>
+    <div class="star" onclick="wish(this,'I love you with my entire soul jaanu, baki ka message video aapke dm mein hai')">⭐</div>
+  </div>
+
+  <p id="wishText"></p>
+
+  <div style="margin-top:24px;display:flex;gap:20px">
+    <button class="btn ghost" onclick="goToScene(3)">Back</button>
+    <button class="btn next" onclick="location.href='page1.html'">Begin Again</button>
+  </div>
+</section>
+
+<!-- LETTER MODAL -->
+<div class="modal" id="letterModal">
+  <div class="pink-letter">
+    <h3>💌 For You</h3>
+    <div class="letter-text" id="letterText"></div>
+    <button class="btn ghost" onclick="closeLetter()">Close</button>
+  </div>
+</div>
+
+<script>
+function goToScene(n){
+  document.querySelectorAll(".scene").forEach(s=>s.classList.remove("active"));
+  document.getElementById("scene"+n).classList.add("active");
+}
+
+function openBouquet(){
+  mailbox.style.display="none";
+  bouquetWrap.style.display="flex";
+}
+
+function openLetter(text){
+  letterText.innerText = text;
+  letterModal.style.display = "flex";
+}
+
+function closeLetter(){
+  letterModal.style.display = "none";
+}
+
+function wish(el,text){
+  el.classList.add("active");
+  wishText.innerText = text;
+}
+
+/* -------- LETTER CONTENT -------- */
+const letter1 = `Hi babu, kaise ho?? Site so far accha hai na?? Anywayssss, mera first message for you:
+
+To my handsome sweetheart:
+
+I loveeee you sosososo much. Tumhe idea bhi nhi hai how deeply in love I am and I love every single bit of it. I love the feelings jo tumne mujhe feel karwaya hai for the first time in my life. Genuinely tumse accha first love koi ho hi nhi sakta tha mere liye. You're everything I wished for and more but in a better way, actually BESTEST way. I saw you for the first time and thought you were adorable. You intrigued me and tabse leke aaj tak mera interest sirf badha hai, everyday feels like a brand new day filled with love. Ek bhi dinn aisa nhi guzra jahan mujhe bored feel hua ho. You always make sure ki I laugh, you always take care of me so much. Thank you for making me feel loved and thank you for being my home. I love you so much babu ❤️.`;
+
+const letter2 = `Toh yeh mera 2nd message hai because tumhe toh pata hi hai mein kitna bolti hu, 1 message mein kabhi complete ho hi nhi sakta 😂😂
+
+To my beautiful beloved:
+
+You make me feel like the luckiest girl in the universe. I hate when you doubt yourself, i hate when you look down on yourself, because in my eyes you're genuinely the most perfect person. Not just by looks, but by heart as well. There's no way I wouldn't have fallen in love with your eyes, your soul, your personality, your humour, your beautiful face. In every universe, I'll look for you because you're the bestest thing that has ever happened to me. I hope tum khudko meri nazron se dekh paate, tumse jyada sundar, haseen, perfect aadmi koi ho hi nhi sakta. I hope you run to me when the world is mean to you. I pray that everything always works out in your favour. I never realized how much you felt like home to me until I found myself thinking about how much I wish you were with me whenever I cried. “Home is whenever I am with you” wali baat aaj pehli baar itni clearly samajh aayi hai. Tum hi mera ghar ho, aur tumhare bina main homesick hoon. I love you infinitely ❤️.`;
+
+const letter3 = `3rd message, yeh sab maine dil se likha hai btw
+
+To my future husband:
+
+Yaar kabhi kabhi words bhi chote lagte hai feelings define karne keliye because mein tumhare liye itna jyada feel karti hu ki mein usko shabd mein likh hi nhi sakti. I want to spend my present with you but most importantly I want you in my future. Want choro, tum toh ab need ho mere liye cutu. Tum toh meri blessing ho, jeet toh mein ussi dinn gayi thi jiss din maine decide karliya tha ki mein tumhe approach karungi and thanks to my persistent stubborn self, maine tumhe paa bhi liya (yayyyyyyyyyy 🥳). I promise ki mein tumhe humesha sabse jyada pyaar karungi aur humesha make sure karungi ki tumhe bohot saara pyaar mile aur care bhi. btw yeh quote padhke tumhari yaad aayi thi:
+
+LOVING YOU IS EASY
+
+I spent my whole life thinking that love was something you had to earn,
+something you had to fight to get and suffer to keep,
+but then you showed up and you reminded me that love is easy.
+
+You're literally my favorite person. Every moment with you feels like a gift, a piece of happiness I never want to let go of. You bring light into my life in ways I can't even put into words. Thank you for being you. I love you jaanu ❤️.`;
+
+const letter4 = `To my kind man:
+
+i didn't fall in love with you because i was looking for someone.
+i didn't fall in love with you because i felt too alone on my own.
+i didn't fall in love with you because i needed a relationship to be happy.
+
+i fell in love with you because you make me feel needed.
+i fell in love with you because when i give you my love, you give me yours in return.
+i fell in love with you because you radiate a very special energy.
+i fell in love with you because you are you.
+
+you are the best thing to ever happen to me, and to call you the love of my life does not do justice to how much I love you. My existence doesn't make sense without you by my side.
+
+thank you for showing me patience.
+for meeting my insecurities with kindness.
+for looking into my tired eyes and offering me a place to rest.
+thank you for keeping me warm, and holding me when things get too heavy.
+thank you for supporting me and hearing me and seeing me.
+thank you for loving me and teaching me how to love me too.
+
+I loveeee you with my entire soul and I hope you can feel the sincerity of my feelings on days you doubt yourself , i loveeeeeee you sabse jyada mwah mwahhhh ❤️.`;
+</script>
+
+</body>
+</html>

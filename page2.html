@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Birthday — Page 2</title>
+<style>
+  :root{
+    --louis-blue: #A3C4F3;
+    --card: rgba(255,255,255,0.92);
+    --muted: #5f5f75;
+    --accent: #ff8fb8;
+    --polaroid-shadow: 0 10px 30px rgba(18,20,40,0.06);
+    --depth-shadow: 0 20px 40px rgba(34,34,60,0.14);
+    --max-width: 1120px;
+    --polaroid-height: 120px;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  *{box-sizing:border-box}
+  html,body{ height:100%; margin:0; }
+  body{
+    margin:0;
+    min-height:100vh;
+    background-color: var(--louis-blue);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:22px;
+  }
+
+  /* Card */
+  .wrap{
+    width:100%;
+    max-width: var(--max-width);
+    background: var(--card);
+    border-radius:14px;
+    padding:22px;
+    box-shadow: var(--polaroid-shadow);
+    backdrop-filter: blur(6px);
+  }
+
+  header{ text-align:center; margin-bottom:10px; color:#2a2a48; }
+  header h1{ margin:0; font-size:20px; font-weight:800; }
+  header p{ margin:6px 0 0; color:var(--muted); font-size:14px; }
+
+  /* Layout */
+  .content{
+    display:flex;
+    gap:18px;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    margin-top:14px;
+  }
+  .col{ width:28%; display:flex; flex-direction:column; gap:12px; align-items:center; }
+
+  /* Polaroid (rectangular) */
+  .polaroid{
+    width:100%;
+    background:#fff;
+    border-radius:10px;
+    padding:6px;
+    box-shadow: var(--polaroid-shadow);
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height: var(--polaroid-height);
+    border:8px solid #fff;
+    transition: transform .28s ease, box-shadow .28s ease;
+    cursor: pointer;
+    position: relative;
+  }
+  .polaroid:hover{ transform: translateY(-6px) rotate(-1deg); box-shadow: 0 22px 40px rgba(18,20,40,0.12); }
+  .polaroid img{ width:100%; height:100%; object-fit:cover; border-radius:6px; display:block; }
+
+  /* Center column */
+  .center{
+    width:36%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    perspective:1200px;
+  }
+  .center .label{ font-weight:700; color:#2a2a48; }
+
+  /* 3D envelope */
+  .envelope-3d{
+    width:220px;
+    height:150px;
+    position:relative;
+    transform-style:preserve-3d;
+    transition: transform 420ms cubic-bezier(.2,.9,.3,1), box-shadow 420ms;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .envelope-3d:hover{ transform: translateY(-10px) rotateX(6deg) rotateY(-8deg); box-shadow: var(--depth-shadow); }
+  .envelope-3d::before{
+    content:'';
+    position:absolute;
+    inset:8px;
+    background:linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0.02));
+    transform:translateZ(-10px);
+    border-radius:10px;
+    z-index:0;
+  }
+  .envelope-front{
+    position:relative;
+    width:100%;
+    height:100%;
+    border-radius:12px;
+    overflow:hidden;
+    transform-origin: top center;
+    transition: transform 520ms cubic-bezier(.2,.9,.3,1);
+    z-index:4;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+    background:#fff;
+  }
+  .envelope-front img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .envelope-edge{
+    position:absolute;
+    left:10px; right:10px; bottom:6px; height:12px;
+    background:linear-gradient(90deg, rgba(0,0,0,0.06), rgba(0,0,0,0.02));
+    transform: translateZ(0px);
+    border-radius:4px;
+    z-index:1;
+  }
+  .envelope-front.open{ transform: rotateX(-60deg) translateZ(6px); }
+
+  /* inner letter sliding up */
+  .letter{
+    position:absolute;
+    width:86%;
+    height:70%;
+    bottom:10px;
+    left:7%;
+    background:linear-gradient(180deg,#fff,#fffefe);
+    border-radius:8px;
+    box-shadow: 0 10px 34px rgba(0,0,0,0.12);
+    transform-origin: bottom center;
+    transform: translateY(36px) rotateX(-12deg) translateZ(-6px) scale(0.98);
+    opacity:0;
+    z-index:2;
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+  }
+  .letter.show{ animation: letterUp 620ms cubic-bezier(.2,.9,.3,1) forwards; }
+  @keyframes letterUp{
+    0%{ transform: translateY(36px) rotateX(-12deg) translateZ(-6px) scale(.98); opacity:0 }
+    40%{ transform: translateY(6px) rotateX(-6deg) translateZ(6px) scale(.996); opacity:1 }
+    100%{ transform: translateY(-18px) rotateX(0deg) translateZ(18px) scale(1); opacity:1 }
+  }
+
+  /* Bunny 3D and speech from mouth */
+  .bunny-3d{
+    width:96px; height:96px; position:relative; transform-style:preserve-3d; transition: transform .52s, box-shadow .52s; will-change:transform; margin-bottom:6px; z-index:6;
+  }
+  .bunny-layer{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; transform: translateZ(22px); }
+  .bunny-layer img{ width:100%; height:100%; object-fit:contain; display:block; border-radius:999px; }
+  .bunny-shadow{ position:absolute; bottom:-6px; left:10px; right:10px; height:12px; background: radial-gradient(ellipse at center, rgba(0,0,0,0.2), rgba(0,0,0,0.06)); filter: blur(6px); transform: translateZ(-6px); border-radius:999px; z-index:0; }
+
+  .speech-from-mouth{ position:absolute; left:102%; top:44%; transform: translate(-18%, -50%) translateZ(12px); z-index:8; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+  .speech-3d{
+    background: linear-gradient(180deg,#fff,#fff);
+    padding:8px 12px; border-radius:12px;
+    box-shadow: 0 12px 30px rgba(18,20,40,0.12);
+    font-weight:700; color:#333; font-size:13px;
+    transform-origin: left center; opacity:0; transform: translateX(-6px) scale(0.96) translateZ(10px);
+    transition: opacity 260ms ease, transform 260ms ease;
+  }
+  .speech-3d.show{ opacity:1; transform: translateX(0) scale(1) translateZ(12px); }
+  .speech-3d::after{ content:''; position:absolute; left:-6px; top:50%; transform: translateY(-50%) rotate(45deg); width:12px; height:12px; background:#fff; box-shadow: 0 6px 18px rgba(18,20,40,0.06); }
+
+  /* ---------- Cute aesthetic scroll / roll style (note) ---------- */
+  .note-roll{
+    margin-top:10px;
+    max-width:420px;
+    position:relative;
+    padding:28px 28px;
+    border-radius:12px;
+    background:
+      /* faint ruled lines */
+      linear-gradient(transparent 0, rgba(0,0,0,0.03) 1px),
+      /* tiny hearts tiled (using inline SVG) */
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36'><text x='50%' y='60%' font-size='12' text-anchor='middle' fill='%23ff4d6d' font-family='Arial'>&#10084;</text></svg>"),
+      /* warm paper gradient */
+      linear-gradient(180deg, #fff8fb 0%, #fff1f6 50%, #fff4f8 100%);
+    background-repeat: repeat, repeat, no-repeat;
+    background-position: 0 0, 6px 8px, 0 0;
+    background-size: 100% 28px, 36px 36px, cover;
+    box-shadow: 0 14px 36px rgba(12,14,24,0.12);
+    border: 1px solid rgba(0,0,0,0.04);
+    color: #2a2a48;
+    line-height:1.45;
+    z-index:3;
+    overflow: visible;
+  }
+  .note-roll h3{ margin:0 0 10px; font-size:16px; font-weight:800; letter-spacing:0.2px; }
+  .note-roll p{ margin:0; white-space:pre-wrap; font-size:14px; color:#3a3a4a; }
+
+  /* rolled ends (left and right dowel caps) */
+  .note-roll::before,
+  .note-roll::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    width:44px;
+    height:56px;
+    border-radius:999px;
+    transform: translateY(-50%);
+    z-index:2;
+    box-shadow: inset 0 6px 14px rgba(255,255,255,0.55), 0 8px 18px rgba(12,14,24,0.12);
+    background: linear-gradient(180deg,#e6c6d8 0%, #d99bb7 100%);
+    border:1px solid rgba(0,0,0,0.06);
+  }
+  .note-roll::before{ left:-28px; transform: translateY(-50%) rotate(-6deg); }
+  .note-roll::after{ right:-28px; transform: translateY(-50%) rotate(6deg); }
+
+  /* tiny paper curl shadows at top corners for realism */
+  .note-roll .top-curl{
+    position:absolute;
+    left:14px;
+    top:-12px;
+    width:60px;
+    height:20px;
+    border-radius:20px 20px 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(0,0,0,0.02));
+    transform: rotate(-6deg);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    z-index:4;
+    opacity:0.9;
+  }
+  .note-roll .top-curl.right{
+    left:auto; right:14px;
+    transform: rotate(6deg);
+  }
+
+  /* inner content wrapper will animate (unfurl) */
+  .note-roll .roll-inner{
+    position:relative;
+    z-index:5;
+    transform-origin: top center;
+    transform: scaleY(0.0);
+    opacity: 0;
+    transition: transform 620ms cubic-bezier(.2,.9,.3,1), opacity 360ms ease;
+  }
+  .note-roll.unrolled .roll-inner{
+    transform: scaleY(1);
+    opacity: 1;
+  }
+
+  /* Actions */
+  .actions{ display:flex; justify-content:space-between; gap:8px; margin-top:18px; align-items:center; }
+  .btn{ border:0; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:800; background:transparent; }
+  .btn.ghost{ background:transparent; border:1px solid rgba(0,0,0,0.08); color:var(--muted); }
+  .btn.primary{ background:linear-gradient(180deg,var(--accent),#ff6aa7); color:white; border:0; }
+
+  /* Modal preview */
+  .modal-overlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); z-index:9999; padding:20px; }
+  .modal-overlay.open{ display:flex; }
+  .modal-card{ position:relative; max-width:1200px; max-height:92%; width:100%; background:rgba(255,255,255,0.98); border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:12px; }
+  .modal-card img{ max-width:100%; max-height:100%; display:block; border-radius:8px; }
+  .modal-close{ position:absolute; top:10px; right:10px; background:rgba(255,255,255,0.95); border:0; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:800; box-shadow:0 8px 20px rgba(0,0,0,0.12); }
+
+  /* Responsive tweaks */
+  @media (max-width:920px){
+    .col{ width:86%; flex-direction:row; justify-content:center; flex-wrap:wrap; }
+    .polaroid{ width:30%; height:110px; }
+    .center{ width:86%; }
+    .speech-from-mouth{ left:110%; top:46%; }
+    .modal-card{ padding:8px; }
+    .note-roll{ padding:20px 18px; max-width:92%; }
+    .note-roll::before, .note-roll::after{ width:36px; height:48px; left:-22px; right:-22px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap" role="main" aria-labelledby="pageTitle">
+    <header>
+      <h1 id="pageTitle">LETTER FOR CUTIE PATOOTIE</h1>
+      <p>MWAH MWAH💌</p>
+    </header>
+
+    <main class="content" role="region" aria-label="Birthday interactive content">
+      <!-- Left column polaroids -->
+      <div class="col left-col" aria-label="Left polaroids">
+        <div class="polaroid" data-id="left1"><img id="left1" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765452065/InShot_20251211_163836717_bxkcj7.jpg" alt="Polaroid 1"></div>
+        <div class="polaroid" data-id="left2"><img id="left2" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765452065/InShot_20251211_164055785_c1slqr.jpg" alt="Polaroid 2"></div>
+        <div class="polaroid" data-id="left3"><img id="left3" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765452065/InShot_20251211_163932619_lgwcic.jpg" alt="Polaroid 3"></div>
+      </div>
+
+      <!-- Center: bunny + envelope + note -->
+      <div class="center" aria-label="Center interactive area">
+        <div class="label">Open me 💌</div>
+
+        <!-- Bunny with speech bubble coming from mouth -->
+        <div style="position:relative; display:flex; align-items:center; gap:8px;">
+          <div class="bunny-3d" id="bunny3d" aria-hidden="true">
+            <div class="bunny-layer">
+              <img id="bunnyImg" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765442136/Picsart_25-12-11_14-05-19-532_ftg7wu.png" alt="cute bunny">
+            </div>
+            <div class="bunny-shadow" aria-hidden="true"></div>
+            <div class="speech-from-mouth" aria-hidden="true">
+              <div id="speechBubble" class="speech-3d">hi babu click on envelope</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Envelope (3D) -->
+        <div class="envelope-3d" id="envelope3d" role="button" tabindex="0" aria-label="Open envelope" aria-pressed="false">
+          <div class="letter" id="letter">
+            <div id="innerLetterContent" style="font-weight:800; margin-bottom:8px;">MESSAGE ALERT</div>
+            <div id="innerLetterText" style="font-size:14px; color:#444;">Click KARO</div>
+          </div>
+
+          <div class="envelope-front" id="envelopeFront">
+            <img id="envImg" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765441761/Picsart_25-12-11_13-56-09-807_zgxnlx.png" alt="envelope">
+          </div>
+          <div class="envelope-edge"></div>
+        </div>
+
+        <!-- Note (hidden until envelope opens) - cute roll -->
+        <div id="noteBox" class="note-roll" aria-live="polite" role="region" aria-label="Birthday note" style="display:none;">
+          <div class="top-curl" aria-hidden="true"></div>
+          <div class="top-curl right" aria-hidden="true"></div>
+          <div class="roll-inner">
+            <h3>HAPPY BIRTHDAY BABU</h3>
+            <p id="noteParagraph">
+happy 21st birthday babyyyy. I loveeee you sosososososo much. Thank you for existing and for being the bestest boyfriend everr. Tum mere liye sabse special person ho, i hope tumhara din bohot bohot mst ho and year bhi and puri jindagi hi 😂. Laga nhi tha koi aadmi itna pasand ayega but i toh love you now and I've zero complaints about it. Baaki ka message tumhe video mein milega. Sending you lotssss of kisses and love (i wish abhi makeout kar paate). I loveeee you babu ❤️🥳
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column polaroids -->
+      <div class="col right-col" aria-label="Right polaroids">
+        <div class="polaroid" data-id="right1"><img id="right1" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765452065/InShot_20251211_163958599_xaaqhz.jpg" alt="Polaroid 4"></div>
+        <div class="polaroid" data-id="right2"><img id="right2" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765452065/InShot_20251211_164906306_nov5cc.jpg" alt="Polaroid 5"></div>
+        <div class="polaroid" data-id="right3"><img id="right3" src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765452145/InShot_20251211_164023372_ejkpy1.jpg" alt="Polaroid 6"></div>
+      </div>
+    </main>
+
+    <!-- Actions -->
+    <div class="actions" role="toolbar" aria-label="Navigation actions">
+      <div style="display:flex; gap:8px;">
+        <button id="backBtn" class="btn ghost" title="Go back to page 1">Back</button>
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <button id="replayBtn" class="btn ghost" title="Replay animations">Replay</button>
+        <button id="nextBtn" class="btn primary" title="Go to next page">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal preview (full-screen) -->
+  <div id="modalOverlay" class="modal-overlay" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Photo preview">
+      <button id="modalClose" class="modal-close" aria-label="Close preview">Close ✕</button>
+      <img id="modalImage" src="" alt="preview">
+    </div>
+  </div>
+
+<script>
+/* ------------------ CONFIG (easy to edit) ------------------ */
+const CONFIG = {
+  POLAROID_LEFT_1: "https://res.cloudinary.com/dcygfcuov/image/upload/v1765452065/InShot_20251211_163836717_bxkcj7.jpg",
+  POLAROID_LEFT_2: "https://res.cloudinary.com/dcygfcuov/image/upload/v1765452065/InShot_20251211_164055785_c1slqr.jpg",
+  POLAROID_LEFT_3: "https://res.cloudinary.com/dcygfcuov/image/upload/v1765452065/InShot_20251211_163932619_lgwcic.jpg",
+  POLAROID_RIGHT_1: "https://res.cloudinary.com/dcygfcuov/image/upload/v1765452065/InShot_20251211_163958599_xaaqhz.jpg",
+  POLAROID_RIGHT_2: "https://res.cloudinary.com/dcygfcuov/image/upload/v1765452065/InShot_20251211_164906306_nov5cc.jpg",
+  POLAROID_RIGHT_3: "https://res.cloudinary.com/dcygfcuov/image/upload/v1765452145/InShot_20251211_164023372_ejkpy1.jpg",
+
+  ENVELOPE_IMG: "https://res.cloudinary.com/dcygfcuov/image/upload/v1765441761/Picsart_25-12-11_13-56-09-807_zgxnlx.png",
+  BUNNY_IMG: "https://res.cloudinary.com/dcygfcuov/image/upload/v1765442136/Picsart_25-12-11_14-05-19-532_ftg7wu.png",
+
+  NOTE_TEXT: `happy 21st birthday babyyyy. I loveeee you sosososososo much. Thank you for existing and for being the bestest boyfriend everr. Tum mere liye sabse special person ho, i hope tumhara din bohot bohot mst ho and year bhi and puri jindagi hi 😂. Laga nhi tha koi aadmi itna pasand ayega but i toh love you now and I've zero complaints about it. Baaki ka message tumhe video mein milega. Sending you lotssss of kisses and love (i wish abhi makeout kar paate). I loveeee you babu ❤️🥳`,
+
+  LETTER_TITLE: "MESSAGE ALERT",
+  LETTER_BODY: "READ KARKE RONA MAT",
+  BUNNY_SPEECH: "hi babu click on envelope"
+};
+/* ---------------- end CONFIG ------------------------- */
+
+/* Wire assets from CONFIG (if you update later) */
+document.getElementById('left1').src = CONFIG.POLAROID_LEFT_1;
+document.getElementById('left2').src = CONFIG.POLAROID_LEFT_2;
+document.getElementById('left3').src = CONFIG.POLAROID_LEFT_3;
+document.getElementById('right1').src = CONFIG.POLAROID_RIGHT_1;
+document.getElementById('right2').src = CONFIG.POLAROID_RIGHT_2;
+document.getElementById('right3').src = CONFIG.POLAROID_RIGHT_3;
+
+document.getElementById('envImg').src = CONFIG.ENVELOPE_IMG;
+document.getElementById('bunnyImg').src = CONFIG.BUNNY_IMG;
+document.getElementById('speechBubble').textContent = CONFIG.BUNNY_SPEECH;
+document.getElementById('noteParagraph').textContent = CONFIG.NOTE_TEXT;
+document.getElementById('innerLetterContent').textContent = CONFIG.LETTER_TITLE;
+document.getElementById('innerLetterText').textContent = CONFIG.LETTER_BODY;
+
+/* ---------------- Envelope open / letter slide ---------------- */
+const envelope3d = document.getElementById('envelope3d');
+const envelopeFront = document.getElementById('envelopeFront');
+const letter = document.getElementById('letter');
+const noteBox = document.getElementById('noteBox');
+const speechBubble = document.getElementById('speechBubble');
+let envelopeOpened = false;
+
+function openEnvelope(){
+  if (envelopeOpened) return;
+  envelopeOpened = true;
+  envelope3d.setAttribute('aria-pressed','true');
+  envelopeFront.classList.add('open');
+  speechBubble.classList.remove('show');
+
+  // show letter slide
+  setTimeout(()=> {
+    letter.classList.add('show');
+
+    // after letter animation completes, show the rolled note and unfurl it
+    setTimeout(()=> {
+      // display the roll container
+      noteBox.style.display = 'block';
+
+      // remove previous unrolled class if any, then add to trigger animation
+      noteBox.classList.remove('unrolled');
+      // small delay to ensure reflow so the transition happens
+      setTimeout(()=> {
+        noteBox.classList.add('unrolled');
+      }, 30);
+    }, 520); // matches letter animation
+  }, 180);
+}
+
+function resetEnvelope(){
+  envelopeFront.classList.remove('open');
+  letter.classList.remove('show');
+
+  // hide/unroll the roll gracefully
+  noteBox.classList.remove('unrolled');
+  // wait for the unroll transition to finish (safe margin) then hide element
+  setTimeout(()=> {
+    noteBox.style.display = 'none';
+  }, 420);
+
+  envelopeOpened = false;
+  envelope3d.setAttribute('aria-pressed','false');
+  setTimeout(()=> speechBubble.classList.add('show'), 140);
+}
+
+envelope3d.addEventListener('click', openEnvelope);
+envelope3d.addEventListener('keydown', (e)=> { if (e.key === 'Enter' || e.key === ' ') openEnvelope(); });
+
+/* -------------- Replay / Back / Next -------------- */
+document.getElementById('replayBtn').addEventListener('click', ()=> {
+  // bunny pop
+  const bunny = document.getElementById('bunny3d');
+  bunny.animate([{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(-16px) scale(1.06)' }, { transform: 'translateY(0) scale(1)' }], { duration: 520, easing: 'ease-out' });
+  // reset envelope
+  resetEnvelope();
+});
+document.getElementById('backBtn').addEventListener('click', ()=> { location.href = 'page1.html'; });
+document.getElementById('nextBtn').addEventListener('click', ()=> { location.href = 'page3.html'; });
+
+/* show speech bubble on load */
+window.addEventListener('load', ()=> {
+  setTimeout(()=> { document.getElementById('speechBubble').classList.add('show'); }, 420);
+});
+
+/* ------------- Modal preview (polaroids) ------------- */
+const modalOverlay = document.getElementById('modalOverlay');
+const modalImage = document.getElementById('modalImage');
+const modalClose = document.getElementById('modalClose');
+
+function openModalWithSrc(src, alt){
+  modalImage.src = src;
+  modalImage.alt = alt || "Photo preview";
+  modalOverlay.classList.add('open');
+  modalOverlay.setAttribute('aria-hidden','false');
+  modalClose.focus();
+}
+
+function closeModal(){
+  modalOverlay.classList.remove('open');
+  modalOverlay.setAttribute('aria-hidden','true');
+  // clear src to free memory on mobile
+  modalImage.src = '';
+}
+
+// open modal on image click
+document.querySelectorAll('.polaroid img').forEach(img => {
+  img.addEventListener('click', (e) => {
+    openModalWithSrc(e.currentTarget.src, e.currentTarget.alt);
+  });
+  // clicking the container also opens
+  const parent = img.closest('.polaroid');
+  if (parent) parent.addEventListener('click', (ev) => {
+    if (ev.target.tagName.toLowerCase() === 'img') return;
+    openModalWithSrc(img.src, img.alt);
+  });
+});
+
+modalClose.addEventListener('click', closeModal);
+modalClose.addEventListener('keyup', (e)=> { if (e.key === 'Enter' || e.key === ' ') closeModal(); });
+
+// overlay click outside card closes
+modalOverlay.addEventListener('click', (e) => {
+  if (e.target === modalOverlay) closeModal();
+});
+
+// Escape closes modal
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && modalOverlay.classList.contains('open')) closeModal();
+});
+
+/* Accessibility focus outline for envelope */
+envelope3d.addEventListener('focus', ()=> envelope3d.style.outline='3px solid rgba(255,143,184,0.18)');
+envelope3d.addEventListener('blur', ()=> envelope3d.style.outline='none');
+
+/* Expose helper to update assets later if desired */
+window._updatePage2Assets = function(obj){
+  if (obj.POLAROID_LEFT_1) document.getElementById('left1').src = obj.POLAROID_LEFT_1;
+  if (obj.POLAROID_LEFT_2) document.getElementById('left2').src = obj.POLAROID_LEFT_2;
+  if (obj.POLAROID_LEFT_3) document.getElementById('left3').src = obj.POLAROID_LEFT_3;
+  if (obj.POLAROID_RIGHT_1) document.getElementById('right1').src = obj.POLAROID_RIGHT_1;
+  if (obj.POLAROID_RIGHT_2) document.getElementById('right2').src = obj.POLAROID_RIGHT_2;
+  if (obj.POLAROID_RIGHT_3) document.getElementById('right3').src = obj.POLAROID_RIGHT_3;
+  if (obj.ENVELOPE_IMG) document.getElementById('envImg').src = obj.ENVELOPE_IMG;
+  if (obj.BUNNY_IMG) document.getElementById('bunnyImg').src = obj.BUNNY_IMG;
+  if (obj.NOTE_TEXT) document.getElementById('noteParagraph').textContent = obj.NOTE_TEXT;
+  if (obj.LETTER_TITLE) document.getElementById('innerLetterContent').textContent = obj.LETTER_TITLE;
+  if (obj.LETTER_BODY) document.getElementById('innerLetterText').textContent = obj.LETTER_BODY;
+  if (obj.BUNNY_SPEECH) document.getElementById('speechBubble').textContent = obj.BUNNY_SPEECH;
+};
+</script>
+</body>
+</html>

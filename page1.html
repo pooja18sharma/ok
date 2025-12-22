@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Happy Birthday — Page 1</title>
+<link rel="icon" href="data:," />
+<style>
+  :root{
+    --accent:#ff8fb8;
+    --text:#2a2a48;
+    --muted:#4a4a6b;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+  body{
+    margin:0;
+    min-height:100vh;
+    display:grid;
+    place-items:center;
+    padding:20px;
+    /* Louis blue background */
+    background-color:#A3C4F3;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .card{
+    width:100%;
+    max-width:980px;
+    background:rgba(255,255,255,0.60);
+    border-radius:18px;
+    padding:28px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.25);
+    position:relative;
+    overflow:hidden;
+    backdrop-filter:blur(6px);
+  }
+
+  .hero{ text-align:center; position:relative; z-index:5; }
+  .title{ font-size:clamp(22px,3vw,34px); color:var(--text); margin:0; }
+  .subtitle{ margin:6px 0 18px; color:var(--muted); font-weight:600; }
+
+  .cat-wrap{ display:flex; justify-content:center; align-items:center; }
+  .cat{
+    width:260px; height:260px; border-radius:16px; object-fit:cover;
+    box-shadow:0 18px 40px rgba(0,0,0,0.20);
+    transform:translateY(40px) scale(.92); opacity:0;
+    transition:transform .48s cubic-bezier(.2,.9,.3,1), opacity .4s;
+  }
+  .cat.show{ transform:translateY(0) scale(1); opacity:1; }
+
+  .countdown{ display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:18px; }
+  .cd{
+    background:rgba(255,255,255,0.95);
+    border-radius:12px;
+    min-width:72px;
+    padding:10px 14px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    text-align:center;
+  }
+  .cd b{ display:block; font-size:20px; color:#222; }
+
+  .controls{ display:flex; justify-content:space-between; gap:10px; margin-top:18px; }
+  .btn{
+    border:0; padding:10px 14px; border-radius:10px; font-weight:700; min-width:90px; cursor:pointer;
+    box-shadow:0 8px 26px rgba(0,0,0,0.06);
+  }
+  .btn.ghost{ background:transparent; border:1px solid rgba(0,0,0,0.25); color:var(--text); }
+  .btn.primary{ background:linear-gradient(180deg,#ff8fb8,#ff6aa7); color:white; }
+
+  .audioRow{ text-align:center; margin-top:12px; }
+  .audioBtn{
+    padding:8px 12px; border-radius:999px; background:rgba(255,255,255,0.6);
+    border:0; cursor:pointer; font-weight:700; color:#4a4a6b; backdrop-filter:blur(4px);
+  }
+
+  #confetti{ position:absolute; inset:0; pointer-events:none; z-index:2; }
+
+  .enable-audio-overlay{
+    position:fixed; inset:0; display:none; place-items:center; z-index:9999;
+    background:rgba(0,0,0,0.55); color:white; text-align:center; padding:20px;
+  }
+  .enable-audio-overlay.open{ display:grid; }
+  .enable-audio-card{
+    background:rgba(255,255,255,0.2); padding:24px; border-radius:14px; max-width:420px; width:86%;
+    box-shadow:0 18px 40px rgba(0,0,0,0.4);
+  }
+  .enable-btn{
+    margin-top:12px; padding:12px 18px; border-radius:12px; border:0; font-weight:800;
+    cursor:pointer; background:linear-gradient(180deg,#ff7fb0,#ff4d89); color:white;
+  }
+
+  @media (max-width:520px){
+    .cat{ width:72vw; height:72vw; }
+    .cd{ min-width:56px; }
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <canvas id="confetti"></canvas>
+
+    <section class="hero" role="main" aria-labelledby="title">
+      <h1 id="title" class="title">Happy Birthday — <span id="name">My Cutu</span> 🎀</h1>
+      <p class="subtitle">yeh tumhare liye chotu sa virtual gift 🎉</p>
+
+      <div class="cat-wrap">
+        <img id="cat" class="cat"
+          src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765367838/ad06429b648238196a092be034dca613_hpo5v0.jpg"
+          alt="Cute cat">
+      </div>
+
+      <div class="countdown" aria-live="polite" role="timer">
+        <div class="cd"><b id="days">0</b><small>Days</small></div>
+        <div class="cd"><b id="hours">00</b><small>Hours</small></div>
+        <div class="cd"><b id="minutes">00</b><small>Minutes</small></div>
+        <div class="cd"><b id="seconds">00</b><small>Seconds</small></div>
+      </div>
+
+      <div class="controls">
+        <button id="replay" class="btn ghost" style="visibility:hidden;">Replay</button>
+        <button id="click" class="btn primary" style="visibility:hidden;">Click</button>
+      </div>
+
+      <div class="audioRow">
+        <button id="audioToggle" class="audioBtn">Play / Pause Tune</button>
+      </div>
+
+      <!-- audio -->
+      <audio id="audio"
+        src="https://res.cloudinary.com/dcygfcuov/video/upload/v1765368210/HAPPY_BIRTHDAY_TO_YOU___PIANO_INSTRUMENTAL___BEST_HAPPY_BITHDAY_MUSIC_2021_MP3_160K_oqnfxy.mp3"
+        preload="auto" loop playsinline></audio>
+    </section>
+  </main>
+
+  <!-- overlay to enable audio if autoplay blocked -->
+  <div id="enableAudio" class="enable-audio-overlay" aria-hidden="true">
+    <div class="enable-audio-card" role="dialog" aria-modal="true">
+      <h3 style="margin:0;font-size:20px;font-weight:800;">Tap to enable sound</h3>
+      <p style="margin-top:6px;">Your browser blocked autoplay. Tap once to start the music 🎶</p>
+      <button id="enableBtn" class="enable-btn">Enable Sound</button>
+    </div>
+  </div>
+
+<script>
+/* --------- Basic init --------- */
+document.getElementById('name').textContent = "My Cutu";
+const audio = document.getElementById('audio');
+const audioToggle = document.getElementById('audioToggle');
+const overlay = document.getElementById('enableAudio');
+const enableBtn = document.getElementById('enableBtn');
+const replayBtn = document.getElementById('replay');
+const clickBtn = document.getElementById('click');
+
+let buttonsShown = false;      // ensure we show buttons only once
+let showButtonsTimer = null;   // reference to 5s timer
+
+/* --------- Confetti (unchanged) --------- */
+(function(){
+  const c=document.getElementById('confetti'), ctx=c.getContext('2d');
+  function fit(){ c.width=c.clientWidth; c.height=c.clientHeight; }
+  window.addEventListener('resize', fit); fit();
+  let parts=[];
+  function spawn(n=200){
+    for(let i=0;i<n;i++){
+      parts.push({
+        x:Math.random()*c.width, y:-10-Math.random()*200,
+        w:6+Math.random()*10, h:8+Math.random()*10,
+        vx:-0.6+Math.random()*1.2, vy:1+Math.random()*3,
+        r:Math.random()*360, vr:-6+Math.random()*12,
+        color:['#ffd9e6','#ff8fb8','#ffe6f2','#fff0f6'][Math.floor(Math.random()*4)]
+      });
+    }
+  }
+  function loop(){
+    ctx.clearRect(0,0,c.width,c.height);
+    for(let i=0;i<parts.length;i++){
+      const p = parts[i];
+      p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r*Math.PI/180);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+      if (p.y > c.height + 40) parts.splice(i--,1);
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+  window.launchConfetti = ()=> spawn(200);
+})();
+
+/* --------- Cat pop helper --------- */
+function popCat(){
+  const cat = document.getElementById('cat');
+  cat.classList.remove('show');
+  void cat.offsetWidth;
+  cat.classList.add('show');
+}
+
+/* --------- Countdown to 00:00 IST Dec 26 --------- */
+function targetUTCforYear(y){ return new Date(Date.UTC(y,11,25,18,30,0)); } // 26 Dec 00:00 IST
+let countdownTriggered = false;
+function updateCountdown(){
+  const now = new Date();
+  let target = targetUTCforYear(now.getFullYear());
+  if (now >= target) target = targetUTCforYear(now.getFullYear()+1);
+  const diff = Math.max(0, target - now);
+  const s = Math.floor(diff/1000);
+
+  document.getElementById('days').textContent = Math.floor(s/86400);
+  document.getElementById('hours').textContent = String(Math.floor((s%86400)/3600)).padStart(2,'0');
+  document.getElementById('minutes').textContent = String(Math.floor((s%3600)/60)).padStart(2,'0');
+  document.getElementById('seconds').textContent = String(s%60).padStart(2,'0');
+
+  if (!countdownTriggered && diff <= 1000) {
+    countdownTriggered = true;
+    popCat();
+    launchConfetti();
+    // don't show buttons here — buttons will appear 5s after audio actually starts playing
+    // we attempt autoplay; if it succeeds, tryAutoplay() will show buttons 5s after audio starts
+    tryAutoplay();
+  }
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+/* --------- Show buttons 5s after audio starts --------- */
+function showButtonsDelayedOnce(){
+  if (buttonsShown) return;
+  // Clear any existing timer (safety)
+  if (showButtonsTimer) clearTimeout(showButtonsTimer);
+  showButtonsTimer = setTimeout(()=> {
+    replayBtn.style.visibility = 'visible';
+    clickBtn.style.visibility = 'visible';
+    buttonsShown = true;
+    showButtonsTimer = null;
+  }, 5000);
+}
+
+/* --------- Autoplay handling --------- */
+function showOverlay(){ overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false'); }
+function hideOverlay(){ overlay.classList.remove('open'); overlay.setAttribute('aria-hidden','true'); }
+
+async function tryAutoplay(){
+  if (!audio || !audio.src) return;
+  try {
+    await audio.play();
+    audioToggle.textContent = 'Pause Tune';
+    hideOverlay();
+    // audio started — show buttons after 5 seconds
+    showButtonsDelayedOnce();
+  } catch (err) {
+    // autoplay blocked — show overlay prompting user interaction
+    showOverlay();
+  }
+}
+
+/* When user taps the enable button on overlay */
+enableBtn.addEventListener('click', async () => {
+  try {
+    await audio.play();
+    audioToggle.textContent = 'Pause Tune';
+    hideOverlay();
+    showButtonsDelayedOnce();
+  } catch (e) {
+    // try AudioContext resume fallback
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === 'suspended') await ctx.resume();
+      try {
+        const src = ctx.createMediaElementSource(audio);
+        src.connect(ctx.destination);
+      } catch (_) {}
+      await audio.play();
+      audioToggle.textContent = 'Pause Tune';
+      hideOverlay();
+      showButtonsDelayedOnce();
+    } catch (err) {
+      // if still blocked, keep overlay visible
+      console.log('Audio start blocked', err);
+    }
+  }
+});
+
+/* audio toggle button — user manually plays/pauses */
+audioToggle.addEventListener('click', async (e) => {
+  try {
+    if (audio.paused) {
+      await audio.play();
+      e.target.textContent = 'Pause Tune';
+      // audio started by user gesture — show buttons after 5s
+      showButtonsDelayedOnce();
+    } else {
+      audio.pause();
+      e.target.textContent = 'Play / Pause Tune';
+    }
+  } catch (err) {
+    // blocked — show overlay to prompt user
+    showOverlay();
+  }
+});
+
+/* --------- Buttons actions --------- */
+replayBtn.addEventListener('click', ()=> {
+  popCat();
+  launchConfetti();
+});
+clickBtn.addEventListener('click', ()=> {
+  location.href = 'page2.html';
+});
+
+/* --------- On-load behavior: attempt autoplay + small cat pop --------- */
+window.addEventListener('load', () => {
+  // gentle cat pop for immediate feedback
+  setTimeout(popCat, 400);
+  // attempt autoplay on load (may be blocked)
+  tryAutoplay();
+});
+</script>
+</body>
+</html>
