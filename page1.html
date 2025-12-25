@@ -21,7 +21,7 @@
 
   .cat{
     width:220px;
-    margin-bottom:20px;
+    margin-bottom:18px;
   }
 
   .timer{
@@ -39,9 +39,9 @@
   }
 
   button{
-    margin-top:28px;
-    padding:12px 28px;
-    border-radius:14px;
+    margin-top:26px;
+    padding:14px 28px;
+    border-radius:16px;
     border:none;
     font-weight:700;
     cursor:pointer;
@@ -53,15 +53,25 @@
   button.show{
     display:block;
   }
+
+  /* 📱 Mobile first tweaks */
+  @media (max-width:480px){
+    .cat{ width:170px; }
+    .timer{ font-size:18px; gap:8px; }
+    .box{ padding:10px 12px; min-width:56px; }
+    button{ width:80%; max-width:260px; }
+  }
 </style>
 </head>
 
 <body>
 
+<!-- 🐱 CAT -->
 <img class="cat"
-  src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765809869/Picsart_25-12-15_20-13-58-790_oppdt5.png"
+  src="https://res.cloudinary.com/dcygfcuov/image/upload/v1765367838/ad06429b648238196a092be034dca613_hpo5v0.jpg"
   alt="Cute cat">
 
+<!-- ⏱ TIMER -->
 <div class="timer">
   <div class="box"><span id="days">0</span><br>Days</div>
   <div class="box"><span id="hours">00</span><br>Hours</div>
@@ -69,7 +79,9 @@
   <div class="box"><span id="seconds">00</span><br>Sec</div>
 </div>
 
-<button id="nextBtn" onclick="startMusicAndGo()">Click 💗</button>
+<!-- BUTTONS -->
+<button id="startBtn" onclick="startMusic()">Tap to start 💗</button>
+<button id="nextBtn" onclick="goNext()">Click 💗</button>
 
 <!-- 🎵 MUSIC -->
 <audio id="music" preload="auto">
@@ -89,38 +101,36 @@ const TARGET = new Date(Date.UTC(
 
 let triggered = false;
 
-/* ===== CONFETTI ===== */
+/* 🎊 CONFETTI */
 function burst(){
-  confetti({
-    particleCount:120,
-    spread:80,
-    origin:{ y:0.6 }
-  });
+  confetti({ particleCount:120, spread:80, origin:{y:0.6} });
 }
-
 function multipleBursts(){
   burst();
-  setTimeout(burst, 700);
-  setTimeout(burst, 1400);
+  setTimeout(burst,700);
+  setTimeout(burst,1400);
 }
 
-/* ===== MUSIC + NAVIGATION (FIXED) ===== */
-function startMusicAndGo(){
+/* 🎵 START MUSIC */
+function startMusic(){
   const music = document.getElementById("music");
   music.volume = 0.8;
 
-  music.play().then(() => {
-    // let music play for a moment BEFORE navigating
-    setTimeout(() => {
-      window.location.href = "page2.html";
-    }, 1200); // 1.2 seconds is enough to hear it
-  }).catch(err => {
-    // even if play fails, still navigate
-    window.location.href = "page2.html";
-  });
+  music.play().then(()=>{
+    // show NEXT button 5 seconds after music starts
+    setTimeout(()=>{
+      document.getElementById("nextBtn").classList.add("show");
+    },5000);
+
+    document.getElementById("startBtn").style.display="none";
+  }).catch(()=>{});
 }
 
-/* ===== COUNTDOWN ===== */
+function goNext(){
+  window.location.href="page2.html";
+}
+
+/* ⏱ COUNTDOWN */
 function updateCountdown(){
   const now = new Date();
   let diff = TARGET - now;
@@ -132,24 +142,25 @@ function updateCountdown(){
       triggered = true;
       multipleBursts();
 
+      // show "Tap to start" shortly after midnight
       setTimeout(()=>{
-        document.getElementById("nextBtn").classList.add("show");
-      },5000);
+        document.getElementById("startBtn").classList.add("show");
+      },1000);
     }
   }
 
-  const s = Math.floor(diff / 1000);
-  document.getElementById("days").textContent = Math.floor(s / 86400);
+  const s = Math.floor(diff/1000);
+  document.getElementById("days").textContent = Math.floor(s/86400);
   document.getElementById("hours").textContent =
-    String(Math.floor((s % 86400) / 3600)).padStart(2,'0');
+    String(Math.floor((s%86400)/3600)).padStart(2,"0");
   document.getElementById("minutes").textContent =
-    String(Math.floor((s % 3600) / 60)).padStart(2,'0');
+    String(Math.floor((s%3600)/60)).padStart(2,"0");
   document.getElementById("seconds").textContent =
-    String(s % 60).padStart(2,'0');
+    String(s%60).padStart(2,"0");
 }
 
 updateCountdown();
-setInterval(updateCountdown, 1000);
+setInterval(updateCountdown,1000);
 </script>
 
 </body>
